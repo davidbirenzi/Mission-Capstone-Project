@@ -104,3 +104,6 @@ outputs/              Figures, metrics, and the map overlay
 ## Data
 
 Sentinel-2 L2A scenes are from the public Element84 Earth Search catalog, tile MGRS-35MRT. One clear scene is kept per quarter from 2017 through mid-2026 when cloud, shadow, and cirrus leave at least 55 percent of the study window usable. The scene list, including scene ids, is `data/processed/scene_catalog.csv`.
+
+#David Birenzi
+\
