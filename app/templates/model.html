@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Model · Nyandungu{% endblock %}
+{% block content %}
+<h1>Model</h1>
+<p class="lede">The network does not classify change directly. It learns what NDVI should be, for this wetland, in a given season. Change is the leftover, and it counts only when that leftover stays.</p>
+
+{% if metrics %}
+<section class="panel">
+  <h2>Architecture</h2>
+  <table>
+    <tr><th>Piece</th><th>Setting</th></tr>
+    <tr><td>Model</td><td>{{ metrics.architecture.type }}</td></tr>
+    <tr><td>Inputs</td><td>{{ metrics.architecture.input_features | join(", ") }}</td></tr>
+    <tr><td>Hidden layers</td><td>{{ metrics.architecture.hidden_layers | join(" then ") }} units</td></tr>
+    <tr><td>Activation</td><td>{{ metrics.architecture.activation }} on the hidden layers</td></tr>
+    <tr><td>Output</td><td>{{ metrics.architecture.output }}</td></tr>
+    <tr><td>Optimizer</td><td>{{ metrics.architecture.optimizer }}, learning rate {{ metrics.architecture.learning_rate }}</td></tr>
+    <tr><td>Loss</td><td>{{ metrics.architecture.loss }}, with early stopping</td></tr>
+    <tr><td>Iterations used</td><td>{{ metrics.architecture.n_iter }}</td></tr>
+    <tr><td>Training rows</td><td>{{ metrics.training.n_samples }} from {{ metrics.training.n_pixels }} park pixels, dates before September 2018 only</td></tr>
+  </table>
+  <img src="{{ url_for('figures', name='architecture.png') }}" alt="Diagram of the multilayer perceptron">
+  <img src="{{ url_for('figures', name='loss_curve.png') }}" alt="Training loss curve">
+</section>
+
+<section class="panel">
+  <h2>Persistence rule</h2>
+  <p>On each post-opening date, a pixel is anomalous when observed NDVI exceeds the expected value by {{ "%.3f"|format(metrics.model.threshold) }}. The pixel is a persistent change when that happens for {{ metrics.model.min_consecutive }} successive kept observations. The threshold and the run length were chosen on tuning blocks, then frozen for the held-out blocks.</p>
+  <img src="{{ url_for('figures', name='residual_timeseries.png') }}" alt="Residual time series inside and outside the park">
+</section>
+
+<section class="panel">
+  <h2>Baseline</h2>
+  <p>The baseline subtracts NDVI on {{ metrics.baseline.pre_date }} from NDVI on {{ metrics.baseline.post_date }}. A pixel is flagged when the later date is higher by {{ "%.2f"|format(metrics.baseline.threshold) }}. There is no seasonal model and no check that the increase lasts.</p>
+</section>
+{% endif %}
+{% endblock %}

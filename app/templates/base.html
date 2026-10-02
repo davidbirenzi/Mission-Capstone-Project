@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Nyandungu monitor{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <p class="brand-kicker">Kigali wetland monitor</p>
+      <p class="brand">Nyandungu</p>
+      <p class="brand-note">Persistent change, phase 1</p>
+      <nav class="nav">
+        {% for key, label, endpoint in nav %}
+          <a href="{{ url_for(endpoint) }}" class="{% if active == key %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+      </nav>
+    </aside>
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Performance · Nyandungu{% endblock %}
+{% block content %}
+<h1>Performance</h1>
+<p class="lede">Scores are on pixels from map blocks that were not used to choose thresholds. A positive pixel sits inside the park and stays at least {{ metrics.reference_rule.ndvi_shift }} NDVI above its pre-2018 level on 70 percent of post-opening dates. A negative pixel sits outside the park and does not show that sustained greening.</p>
+
+{% if metrics %}
+<section class="panel">
+  <h2>Held-out scores</h2>
+  <table class="metrics-table">
+    <tr><th></th><th>Precision</th><th>Recall</th><th>F1</th><th>Accuracy</th><th>IoU</th></tr>
+    <tr>
+      <td>Seasonal MLP + persistence</td>
+      {% for key in ["precision", "recall", "f1", "accuracy", "iou"] %}
+      <td>{{ "%.3f"|format(metrics.model[key]) }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <td>Two-date NDVI difference</td>
+      {% for key in ["precision", "recall", "f1", "accuracy", "iou"] %}
+      <td>{{ "%.3f"|format(metrics.baseline[key]) }}</td>
+      {% endfor %}
+    </tr>
+  </table>
+  <img src="{{ url_for('figures', name='metrics.png') }}" alt="Bar chart comparing model and baseline scores">
+  <img src="{{ url_for('figures', name='change_map.png') }}" alt="Map of detected persistent change">
+</section>
+<section class="panel">
+  <h2>How to read this</h2>
+  <p>The reference is a sustained NDVI increase inside the restored park. That is the direction of the documented change at Nyandungu over this satellite record. The MLP never sees that label while it trains. It only sees pre-2018 NDVI. The comparison asks whether a seasonal residual that keeps recurring is closer to that reference than one pair of dates.</p>
+  <p>Recall is the share of sustained park greening that the detector finds. Precision is lower because some persistent greening also occurs outside the park, and those pixels are not counted as reference positives. Accuracy stays high because most of the window is stable.</p>
+  <p>Test pixels: {{ metrics.model.support }}. Reference positives in that set: {{ metrics.model.positives }}.</p>
+</section>
+{% endif %}
+{% endblock %}

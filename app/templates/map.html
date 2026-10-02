@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Change map · Nyandungu{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+{% block content %}
+<h1>Change map</h1>
+<p class="lede">Red pixels are where the seasonal model and the persistence rule agree that the departure from the pre-2018 pattern continued after the park opened.</p>
+
+{% if metrics %}
+<div class="grid">
+  <div class="card"><span>Persistent area in the park</span><strong>{{ "%.1f"|format(metrics.area_hectares.detected_persistent_inside_park) }} ha</strong></div>
+  <div class="card"><span>Persistent area in the window</span><strong>{{ "%.1f"|format(metrics.area_hectares.detected_persistent_window) }} ha</strong></div>
+  <div class="card"><span>Park footprint on this grid</span><strong>{{ "%.1f"|format(metrics.area_hectares.park) }} ha</strong></div>
+</div>
+<div id="map"></div>
+<p class="legend"><span><i class="swatch change"></i>Persistent change</span><span><i class="swatch park"></i>Nyandungu park boundary</span></p>
+<p class="note">The blue tint is the OpenStreetMap park polygon. Area is 10 m pixels converted to hectares. The score on the Performance page uses held-out blocks, not every pixel drawn here.</p>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const bounds = {{ bounds | tojson }};
+  const map = L.map("map");
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap"
+  }).addTo(map);
+  L.imageOverlay("{{ url_for('maps', name='persistent_change.png') }}", bounds, { opacity: 0.92 }).addTo(map);
+  L.geoJSON({{ aoi | tojson }}, {
+    style: { color: "#1d4e89", weight: 2, fillOpacity: 0 }
+  }).addTo(map);
+  map.fitBounds(bounds);
+</script>
+{% else %}
+<p class="note">Run the analysis to build the change overlay.</p>
+{% endif %}
+{% endblock %}
