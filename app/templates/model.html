@@ -1,37 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Model · Nyandungu{% endblock %}
 {% block content %}
-<h1>Model</h1>
-<p class="lede">The network does not classify change directly. It learns what NDVI should be, for this wetland, in a given season. Change is the leftover, and it counts only when that leftover stays.</p>
-
-{% if metrics %}
-<section class="panel">
-  <h2>Architecture</h2>
-  <table>
-    <tr><th>Piece</th><th>Setting</th></tr>
-    <tr><td>Model</td><td>{{ metrics.architecture.type }}</td></tr>
-    <tr><td>Inputs</td><td>{{ metrics.architecture.input_features | join(", ") }}</td></tr>
-    <tr><td>Hidden layers</td><td>{{ metrics.architecture.hidden_layers | join(" then ") }} units</td></tr>
-    <tr><td>Activation</td><td>{{ metrics.architecture.activation }} on the hidden layers</td></tr>
-    <tr><td>Output</td><td>{{ metrics.architecture.output }}</td></tr>
-    <tr><td>Optimizer</td><td>{{ metrics.architecture.optimizer }}, learning rate {{ metrics.architecture.learning_rate }}</td></tr>
-    <tr><td>Loss</td><td>{{ metrics.architecture.loss }}, with early stopping</td></tr>
-    <tr><td>Iterations used</td><td>{{ metrics.architecture.n_iter }}</td></tr>
-    <tr><td>Training rows</td><td>{{ metrics.training.n_samples }} from {{ metrics.training.n_pixels }} park pixels, dates before September 2018 only</td></tr>
-  </table>
-  <img src="{{ url_for('figures', name='architecture.png') }}" alt="Diagram of the multilayer perceptron">
-  <img src="{{ url_for('figures', name='loss_curve.png') }}" alt="Training loss curve">
-</section>
-
-<section class="panel">
-  <h2>Persistence rule</h2>
-  <p>On each post-opening date, a pixel is anomalous when observed NDVI exceeds the expected value by {{ "%.3f"|format(metrics.model.threshold) }}. The pixel is a persistent change when that happens for {{ metrics.model.min_consecutive }} successive kept observations. The threshold and the run length were chosen on tuning blocks, then frozen for the held-out blocks.</p>
-  <img src="{{ url_for('figures', name='residual_timeseries.png') }}" alt="Residual time series inside and outside the park">
-</section>
-
-<section class="panel">
-  <h2>Baseline</h2>
-  <p>The baseline subtracts NDVI on {{ metrics.baseline.pre_date }} from NDVI on {{ metrics.baseline.post_date }}. A pixel is flagged when the later date is higher by {{ "%.2f"|format(metrics.baseline.threshold) }}. There is no seasonal model and no check that the increase lasts.</p>
-</section>
-{% endif %}
+<h1>Model &amp; method — {{ cfg.label }}</h1>
+<p>Site: {% for s,c in wetlands.items() %}<a href="/model?site={{ s }}">{{ c.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+<div class="panel"><h2>The idea</h2>
+<p>Two-date differencing asks "did this pixel change between date A and date B?" — and fires on seasonality, water-level swings and single cloudy scenes. This system instead learns <strong>what each pixel normally does across the year</strong>, then asks "has this pixel departed from its own normal behaviour, and has that departure <em>persisted</em>?"</p></div>
+<div class="panel"><h2>1 · Normal-behaviour models (run in parallel and compared)</h2>
+<ul class="steps">
+<li><strong>Seasonal harmonic model:</strong> NDVI ≈ pixel level + a₁sin + a₂cos + a₃sin2 + a₄cos2 over day-of-year. Each pixel keeps its own level; the seasonal shape is pooled across all pixels (tens of thousands of training observations), which stays stable when a normal period has few scenes — a purely per-pixel harmonic overfits there, and we show that in the methods note.</li>
+<li><strong>MLP regressor:</strong> scikit-learn <code>MLPRegressor</code> (64–32 ReLU, Adam, squared error, early stopping). Inputs: seasonal harmonics + the pixel's normal-period median NDVI, NDWI and MNDWI. Output: expected NDVI.</li>
+</ul>
+<img class="figure" src="/figures/{{ site }}/architecture.png">
+<img class="figure" src="/figures/{{ site }}/loss_curve.png">
+</div>
+<div class="panel"><h2>2 · Persistence engine</h2>
+<p>Residual = observed − expected NDVI. In the monitoring period a pixel is anomalous when |residual| ≥ threshold. It becomes a <strong>persistent change</strong> only after <em>k consecutive</em> anomalous clear observations. Threshold and k are tuned on tuning blocks only. We record onset date, longest run, anomaly count, mean magnitude and a 0–1 confidence score.</p>
+<img class="figure" src="/figures/{{ site }}/residual_timeseries.png"></div>
+<div class="panel"><h2>3 · Change typing &amp; mapping</h2>
+<p>Monitoring-vs-normal shifts in NDVI, MNDWI, NDMI and BSI classify each pixel (vegetation gain/loss, water gain/loss, vegetation &amp; water loss, built-up/bare encroachment, mixed). Connected pixels (≥9 px ≈ 0.09 ha) become polygons with hectares, onset, and confidence.</p></div>
+<div class="panel"><h2>4 · Baseline</h2>
+<p>The conventional comparator: |NDVI difference| between the clearest normal-period and clearest monitoring-period scenes, threshold tuned the same way. It has no seasonal model and no persistence requirement.</p></div>
+{% if metrics %}<p>For this wetland the selected proposed model is <strong>{{ metrics.chosen_model }}</strong>. See <a href="/evaluation">Evaluation</a> for the full comparison.</p>{% endif %}
 {% endblock %}

@@ -1,0 +1,136 @@
+{
+  "site": "gikondo",
+  "label": "Gikondo Wetland",
+  "subtitle": "Gikondo valley, Kicukiro / Gasabo / Nyarugenge",
+  "story": "degradation_and_rehabilitation",
+  "aoi_source": "OpenStreetMap way 1209698095 (natural=wetland) via Overpass",
+  "intervention_label": "Industrial relocation from 2018; REMA rehabilitation from Feb 2024",
+  "expected_change": "Long industrial-era degradation, disturbed ground and recovery signals during rehabilitation",
+  "scenes": 37,
+  "first_date": "2017-06-27",
+  "last_date": "2026-06-30",
+  "train_scenes": 11,
+  "monitor_scenes": 26,
+  "train_end": "2020-01-01",
+  "monitor_start": "2020-01-01",
+  "usable_pixels": 232799,
+  "aoi_pixels": 10493,
+  "aoi_hectares": 104.93,
+  "training": {
+    "n_samples": 85553,
+    "n_pixels": 8000
+  },
+  "chosen_model": "Harmonic + persistence",
+  "models": {
+    "Harmonic + persistence": {
+      "precision": 0.8006309148264984,
+      "recall": 0.9672256097560976,
+      "f1": 0.8760787021056266,
+      "accuracy": 0.9794516627554233,
+      "iou": 0.7794840294840295,
+      "support": 34942,
+      "positives": 2624,
+      "confusion_matrix": [
+        [
+          31686,
+          632
+        ],
+        [
+          86,
+          2538
+        ]
+      ],
+      "threshold": 0.12,
+      "min_consecutive": 4
+    },
+    "MLP + persistence": {
+      "precision": 0.5751356451993395,
+      "recall": 0.9291158536585366,
+      "f1": 0.7104764680169022,
+      "accuracy": 0.9431343369011504,
+      "iou": 0.5509604519774012,
+      "support": 34942,
+      "positives": 2624,
+      "confusion_matrix": [
+        [
+          30517,
+          1801
+        ],
+        [
+          186,
+          2438
+        ]
+      ],
+      "threshold": 0.18,
+      "min_consecutive": 3
+    },
+    "Two-date baseline": {
+      "precision": 0.5956929489406044,
+      "recall": 0.6535823170731707,
+      "f1": 0.6232963837906597,
+      "accuracy": 0.9406731154484574,
+      "iou": 0.4527455121436114,
+      "support": 34942,
+      "positives": 2624,
+      "confusion_matrix": [
+        [
+          31154,
+          1164
+        ],
+        [
+          909,
+          1715
+        ]
+      ],
+      "threshold": 0.18,
+      "pre_date": "2018-08-16",
+      "post_date": "2025-07-30"
+    }
+  },
+  "reference_rule": {
+    "shift": 0.08,
+    "fraction": 0.6,
+    "description": "Monitoring median NDVI shifts >=0.08 from normal median on >=60% of clear monitoring observations (either direction); negatives are stable pixels. Silver-standard reference -- see docs/METHODS.md."
+  },
+  "area_hectares": {
+    "detected_inside_aoi": 81.66,
+    "detected_window": 622.7,
+    "detected_control_ring": 541.04
+  },
+  "change_by_type_inside_aoi": {
+    "Built-up / bare encroachment": 1.72,
+    "Mixed / other persistent change": 11.3,
+    "Vegetation & water gain (recovery)": 6.13,
+    "Vegetation gain": 42.47,
+    "Vegetation loss": 1.34,
+    "Water gain": 0.32,
+    "Water loss (drying)": 18.38
+  },
+  "change_by_type_window": {
+    "Built-up / bare encroachment": 87.56,
+    "Mixed / other persistent change": 154.11,
+    "Vegetation & water gain (recovery)": 12.52,
+    "Vegetation & water loss": 1.58,
+    "Vegetation gain": 203.11,
+    "Vegetation loss": 109.46,
+    "Water gain": 3.85,
+    "Water loss (drying)": 50.51
+  },
+  "onset_pixels_by_year_inside_aoi": {
+    "2020": 1050,
+    "2021": 2294,
+    "2022": 2382,
+    "2023": 1146,
+    "2024": 650,
+    "2025": 644
+  },
+  "bounds_wgs84": [
+    30.062,
+    -1.982,
+    30.103,
+    -1.936
+  ],
+  "rgb_early_date": "2017-07-02",
+  "rgb_late_date": "2025-07-30",
+  "n_change_polygons": 12
+}

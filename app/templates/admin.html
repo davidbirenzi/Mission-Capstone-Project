@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>System status &amp; operations</h1>
+<p class="lede">Local-first deployment: the demonstration runs entirely from stored cubes and outputs. PostgreSQL/PostGIS is provided for the deployed database layer (<code>db/schema.sql</code>, <code>docker-compose.yml</code>).</p>
+<div class="panel"><h2>Site readiness</h2>
+<table><tr><th>Wetland</th><th>Boundary</th><th>Data cube</th><th>Scenes</th><th>Results</th></tr>
+{% for s in status %}<tr><td>{{ s.label }}</td><td>{{ '✓' if s.aoi else '✗ missing' }}</td><td>{{ '✓' if s.cube else '✗ missing' }}</td><td>{{ s.scenes }}</td><td>{{ '✓' if s.metrics else '✗ not run' }}</td></tr>{% endfor %}
+</table></div>
+<div class="panel"><h2>Pipeline (command line)</h2>
+<pre><code>python scripts/make_aois.py          # rebuild wetland boundaries from OpenStreetMap
+python -m src.download --all         # build Sentinel-2 cubes (needs internet, resumable)
+python -m src.analysis --all         # train models, detect, evaluate, write maps/metrics
+python -m app.app                    # serve this app at http://127.0.0.1:5000
+python -m src.load_postgis           # (optional) load results into PostGIS when DB is up
+python -m pytest tests/ -q           # run the test suite</code></pre>
+<p>To monitor a new wetland: add its boundary to <code>data/aoi/</code>, add one entry to <code>WETLANDS</code> in <code>src/config.py</code> (boundary file, window, normal-period end date), then run the three pipeline commands with <code>--site &lt;name&gt;</code>.</p></div>
+<div class="panel"><h2>Field verification (next step)</h2>
+<p><code>data/field/field_verification_template.csv</code> lists the columns to complete on site visits: alert ID, GPS, photo, observed land cover, and whether the detected change is confirmed. Confirmed points become gold-standard reference data and replace the silver-standard evaluation.</p></div>
+{% endblock %}

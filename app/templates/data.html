@@ -1,47 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Data · Nyandungu{% endblock %}
 {% block content %}
-<h1>Data</h1>
-<p class="lede">Each kept scene is one clear Sentinel-2 visit. Cloud, shadow, and cirrus pixels are removed with the scene classification layer. NDVI measures vegetation. NDWI measures open water.</p>
-
-{% if metrics %}
-<div class="grid">
-  <div class="card"><span>Scenes kept</span><strong>{{ metrics.scenes }}</strong></div>
-  <div class="card"><span>Before Sept 2018</span><strong>{{ metrics.pre_scenes }}</strong></div>
-  <div class="card"><span>During the works</span><strong>{{ metrics.transition_scenes }}</strong></div>
-  <div class="card"><span>After opening</span><strong>{{ metrics.post_scenes }}</strong></div>
+<h1>Data — {{ cfg.label }}</h1>
+<p>Site: {% for s,c in wetlands.items() %}<a href="/data?site={{ s }}">{{ c.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+<p class="lede">Sentinel-2 L2A (Copernicus, via Element84 Earth Search STAC), one best scene per quarter, cloud/shadow masked with the SCL band. Six indices are computed per scene at 10 m. Cubes are stored locally so analysis and the demo run offline.</p>
+<div class="panel"><h2>Indices used</h2>
+<table><tr><th>Index</th><th>Formula (bands)</th><th>What it shows</th></tr>
+<tr><td>NDVI</td><td>(B08−B04)/(B08+B04)</td><td>Vegetation vigour</td></tr>
+<tr><td>NDWI</td><td>(B03−B08)/(B03+B08)</td><td>Open water / moisture (McFeeters)</td></tr>
+<tr><td>MNDWI</td><td>(B03−B11)/(B03+B11)</td><td>Open water, suppresses built-up noise</td></tr>
+<tr><td>NDMI</td><td>(B08−B11)/(B08+B11)</td><td>Vegetation/canopy moisture</td></tr>
+<tr><td>SAVI</td><td>1.5·(B08−B04)/(B08+B04+0.5)</td><td>Vegetation with soil adjustment</td></tr>
+<tr><td>BSI</td><td>((B11+B04)−(B08+B02))/((B11+B04)+(B08+B02))</td><td>Bare soil / built-up exposure</td></tr></table></div>
+{% if metrics %}<p>Period: {{ metrics.first_date }} → {{ metrics.last_date }} · {{ metrics.scenes }} scenes ({{ metrics.train_scenes }} normal, {{ metrics.monitor_scenes }} monitoring)</p>{% endif %}
+<div class="split">
+<div class="panel"><h2>NDVI over time</h2><img class="figure" src="/figures/{{ site }}/ndvi_timeseries.png"></div>
+<div class="panel"><h2>MNDWI over time</h2><img class="figure" src="/figures/{{ site }}/mndwi_timeseries.png"></div>
 </div>
-
-<section class="panel">
-  <h2>NDVI inside the park</h2>
-  <img src="{{ url_for('figures', name='ndvi_distribution.png') }}" alt="NDVI distributions before restoration and after opening">
-</section>
-<section class="panel">
-  <h2>NDWI inside the park</h2>
-  <img src="{{ url_for('figures', name='ndwi_distribution.png') }}" alt="NDWI distributions before restoration and after opening">
-</section>
-<section class="panel">
-  <h2>How the inputs move together</h2>
-  <img src="{{ url_for('figures', name='correlation.png') }}" alt="Correlation of seasonal features, normal levels, and NDVI">
-</section>
-<section class="panel">
-  <h2>Median NDVI over time</h2>
-  <img src="{{ url_for('figures', name='ndvi_timeseries.png') }}" alt="Median NDVI inside and outside Nyandungu">
-</section>
-{% endif %}
-
-<section class="panel">
-  <h2>Scenes in the local cube</h2>
-  <table>
-    <tr><th>Date</th><th>Scene cloud %</th><th>Clear fraction in the window</th><th>Tile</th></tr>
-    {% for row in catalog %}
-    <tr>
-      <td>{{ row.date }}</td>
-      <td>{{ "%.1f"|format(row.cloud_cover) }}</td>
-      <td>{{ "%.2f"|format(row.clear_fraction) }}</td>
-      <td>{{ row.mgrs }}</td>
-    </tr>
-    {% endfor %}
-  </table>
-</section>
+<div class="panel"><h2>Scene catalogue ({{ catalog|length }} scenes)</h2>
+<table><tr><th>Date</th><th>Scene ID</th><th>Tile</th><th>Cloud %</th><th>Clear fraction</th></tr>
+{% for r in catalog %}<tr><td>{{ r.date }}</td><td><small>{{ r.item_id }}</small></td><td>{{ r.mgrs }}</td><td>{{ r.cloud_cover }}</td><td>{{ r.clear_fraction }}</td></tr>{% endfor %}
+</table></div>
 {% endblock %}

@@ -1,0 +1,29 @@
+# Local deployment: web app + PostgreSQL/PostGIS.
+# The app also runs without Docker:  python -m app.app
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: wetland
+      POSTGRES_PASSWORD: wetland
+      POSTGRES_DB: wetland
+    ports:
+      - "5433:5432"
+    volumes:
+      - wetland_db:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  web:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://wetland:wetland@db:5432/wetland
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+    depends_on:
+      - db
+
+volumes:
+  wetland_db:

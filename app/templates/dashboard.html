@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Persistent wetland change in Kigali — at a glance</h1>
+<p class="lede">This system learns each wetland's <strong>normal seasonal pattern</strong> from Sentinel-2 history, then reports only changes that <strong>persist across successive observations</strong> — distinguishing lasting degradation or recovery from a dry month, a cloudy scene or seasonal noise. Every reported change is dated (onset), typed, area-quantified and confidence-scored.</p>
+
+<div class="grid">
+  <div class="card"><span>Wetlands monitored</span><strong>{{ totals.sites }}</strong></div>
+  <div class="card"><span>Sentinel-2 scenes analysed</span><strong>{{ totals.scenes }}</strong></div>
+  <div class="card"><span>Persistent change inside wetlands</span><strong>{{ totals.area_inside }} ha</strong></div>
+  <div class="card"><span>Change alerts (polygons)</span><strong>{{ totals.polygons }}</strong></div>
+</div>
+
+<div class="panel">
+  <h2>Three wetlands, three stories</h2>
+  <table>
+    <tr><th>Wetland</th><th>Story</th><th>AOI (ha)</th><th>Detected inside (ha)</th><th>Model F1</th><th>Baseline F1</th><th></th></tr>
+    {% for site, m in metrics.items() %}
+    <tr>
+      <td><strong>{{ m.label }}</strong><br><small>{{ m.subtitle }}</small></td>
+      <td>{{ m.expected_change }}</td>
+      <td>{{ m.aoi_hectares }}</td>
+      <td><strong>{{ m.area_hectares.detected_inside_aoi }}</strong></td>
+      <td>{{ '%.3f'|format(m.models[m.chosen_model].f1) if m.models.get(m.chosen_model) else '—' }}</td>
+      <td>{{ '%.3f'|format(m.models['Two-date baseline'].f1) if m.models.get('Two-date baseline') else '—' }}</td>
+      <td><a href="/wetland/{{ site }}">Explore →</a> · <a href="/map/{{ site }}">Map</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7">Analysis not run yet. Run <code>python -m src.analysis --all</code>.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Largest persistent-change alerts</h2>
+  <table>
+    <tr><th>#</th><th>Wetland</th><th>Type</th><th>Area (ha)</th><th>Onset</th><th>Confidence</th><th></th></tr>
+    {% for a in top_alerts %}
+    <tr><td>{{ a.id }}</td><td>{{ a.site_label }}</td><td>{{ a.change_type }}</td><td>{{ a.area_ha }}</td><td>{{ a.onset_date }}</td><td>{{ a.confidence_level }} ({{ a.confidence }})</td><td><a href="/map/{{ a.site }}">View</a></td></tr>
+    {% endfor %}
+  </table>
+  <p><a href="/alerts">All alerts →</a> · <a href="/alerts.csv">Download CSV</a></p>
+</div>
+
+<div class="panel">
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li><strong>Learn normal:</strong> harmonic regression and an MLP learn expected NDVI for every pixel from the normal period (season + the pixel's own normal levels).</li>
+    <li><strong>Detect deviation:</strong> observed − expected NDVI (the residual) is tracked through the monitoring period.</li>
+    <li><strong>Require persistence:</strong> a change is reported only when the deviation stays large for consecutive clear observations — with onset date, duration, magnitude and confidence.</li>
+    <li><strong>Type &amp; quantify:</strong> NDVI/MNDWI/NDMI/BSI shifts classify the change (vegetation gain/loss, water loss, built-up encroachment…); connected areas become map polygons with hectares.</li>
+    <li><strong>Evaluate honestly:</strong> spatially held-out blocks, precision/recall/F1/accuracy/IoU, against a conventional two-date baseline — with limitations stated, not hidden.</li>
+  </ol>
+</div>
+{% endblock %}

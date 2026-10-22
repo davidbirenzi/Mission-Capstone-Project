@@ -1,0 +1,2 @@
+alert_id,site,change_type_predicted,area_ha,onset_date,visit_date,lon,lat,photo_file,observed_land_cover,change_confirmed (yes/no/partial),actual_change_type,notes,verified_by
+,,,,,,,,,,,,,

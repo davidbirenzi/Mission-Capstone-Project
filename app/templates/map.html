@@ -1,36 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Change map · Nyandungu{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>.leaflet-popup-content{font-size:13px}</style>
 {% endblock %}
 {% block content %}
-<h1>Change map</h1>
-<p class="lede">Red pixels are where the seasonal model and the persistence rule agree that the departure from the pre-2018 pattern continued after the park opened.</p>
-
-{% if metrics %}
-<div class="grid">
-  <div class="card"><span>Persistent area in the park</span><strong>{{ "%.1f"|format(metrics.area_hectares.detected_persistent_inside_park) }} ha</strong></div>
-  <div class="card"><span>Persistent area in the window</span><strong>{{ "%.1f"|format(metrics.area_hectares.detected_persistent_window) }} ha</strong></div>
-  <div class="card"><span>Park footprint on this grid</span><strong>{{ "%.1f"|format(metrics.area_hectares.park) }} ha</strong></div>
-</div>
+<h1>Change map — {{ cfg.label }}</h1>
+<p class="lede">Persistent-change polygons inside the wetland, coloured by change type. Click a polygon for area, onset, magnitude and confidence. Click anywhere else on the map to load that pixel's NDVI/MNDWI history below the map.</p>
+<p>Site: {% for s, c in wetlands.items() %}<a href="/map/{{ s }}" class="{% if s==site %}active-link{% endif %}">{{ c.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
 <div id="map"></div>
-<p class="legend"><span><i class="swatch change"></i>Persistent change</span><span><i class="swatch park"></i>Nyandungu park boundary</span></p>
-<p class="note">The blue tint is the OpenStreetMap park polygon. Area is 10 m pixels converted to hectares. The score on the Performance page uses held-out blocks, not every pixel drawn here.</p>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div class="legend" id="typeLegend"></div>
+<div class="panel"><h2>Pixel inspector</h2><p id="pixelInfo">Click the map to inspect a pixel.</p><canvas id="pixelChart" height="90"></canvas></div>
+{% if metrics %}<p>Detected inside wetland: <strong>{{ metrics.area_hectares.detected_inside_aoi }} ha</strong> of {{ metrics.aoi_hectares }} ha · Model: {{ metrics.chosen_model }} · <a href="/report/{{ site }}.pdf">PDF report</a></p>{% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
-  const bounds = {{ bounds | tojson }};
-  const map = L.map("map");
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18,
-    attribution: "&copy; OpenStreetMap"
-  }).addTo(map);
-  L.imageOverlay("{{ url_for('maps', name='persistent_change.png') }}", bounds, { opacity: 0.92 }).addTo(map);
-  L.geoJSON({{ aoi | tojson }}, {
-    style: { color: "#1d4e89", weight: 2, fillOpacity: 0 }
-  }).addTo(map);
-  map.fitBounds(bounds);
+const aoi = {{ aoi|tojson }}, changes = {{ changes|tojson }}, bounds = {{ bounds|tojson }};
+const TYPE_COLORS = {"Vegetation gain":"#15803d","Vegetation & water gain (recovery)":"#0e9f6e","Vegetation loss":"#b45309","Vegetation & water loss":"#b42318","Water loss (drying)":"#c2410c","Water gain":"#2563eb","Built-up / bare encroachment":"#7c2d12","Mixed / other persistent change":"#6d28d9"};
+const map = L.map('map');
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap contributors'}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {attribution:'Esri World Imagery'}).addTo(map);
+if (aoi) L.geoJSON(aoi, {style:{color:'#1d4e89', weight:2, fillOpacity:0.08}}).addTo(map);
+const seen = new Set();
+L.geoJSON(changes, {
+  style: f => ({color: TYPE_COLORS[f.properties.change_type]||'#6d28d9', weight:1, fillColor: TYPE_COLORS[f.properties.change_type]||'#6d28d9', fillOpacity:0.65}),
+  onEachFeature: (f, layer) => { seen.add(f.properties.change_type);
+    const p=f.properties;
+    layer.bindPopup(`<strong>${p.change_type}</strong><br>Area: ${p.area_ha} ha<br>Onset: ${p.onset_date}<br>Mean deviation: ${p.mean_magnitude}<br>Longest run: ${p.max_run} obs<br>Confidence: ${p.confidence_level} (${p.confidence})`);
+  }}).addTo(map);
+if (bounds) map.fitBounds(bounds);
+document.getElementById('typeLegend').innerHTML = [...seen].map(t=>`<span><span class="swatch" style="background:${TYPE_COLORS[t]}"></span>${t}</span>`).join(' ');
+let chart;
+map.on('click', async e => {
+  document.getElementById('pixelInfo').textContent = 'Loading pixel history…';
+  const r = await fetch(`/api/pixel/{{ site }}?lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
+  const d = await r.json();
+  if (d.error) { document.getElementById('pixelInfo').textContent = d.error; return; }
+  document.getElementById('pixelInfo').textContent = `Pixel history at ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)} (row ${d.row}, col ${d.col})`;
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('pixelChart'), {type:'line', data:{labels:d.dates, datasets:[
+    {label:'NDVI', data:d.ndvi, borderColor:'#15803d', pointRadius:2, spanGaps:true},
+    {label:'MNDWI', data:d.mndwi, borderColor:'#2563eb', pointRadius:2, spanGaps:true}]}});
+});
 </script>
-{% else %}
-<p class="note">Run the analysis to build the change overlay.</p>
-{% endif %}
 {% endblock %}

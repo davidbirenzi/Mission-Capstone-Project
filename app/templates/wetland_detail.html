@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>{% endblock %}
+{% block content %}
+<h1>{{ cfg.label }}</h1>
+<p class="lede">{{ cfg.subtitle }} — {{ cfg.expected_change }}.</p>
+<p><em>{{ cfg.intervention_label }}.</em> Normal period: before {{ cfg.train_end }} · Monitoring: from {{ cfg.monitor_start }} · Boundary: {{ cfg.aoi_source }}</p>
+
+{% if metrics %}
+<div class="grid">
+  <div class="card"><span>Wetland area</span><strong>{{ metrics.aoi_hectares }} ha</strong></div>
+  <div class="card"><span>Persistent change inside</span><strong>{{ metrics.area_hectares.detected_inside_aoi }} ha</strong></div>
+  <div class="card"><span>Change alerts</span><strong>{{ metrics.n_change_polygons }}</strong></div>
+  <div class="card"><span>Scenes (normal/monitor)</span><strong>{{ metrics.train_scenes }}/{{ metrics.monitor_scenes }}</strong></div>
+</div>
+
+<div class="panel"><h2>Change by type (inside wetland)</h2>
+<table><tr><th>Type</th><th>Hectares</th></tr>
+{% for k, v in metrics.change_by_type_inside_aoi.items()|sort(attribute=1, reverse=true) %}<tr><td>{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}
+</table>
+<img class="figure" src="/figures/{{ site }}/change_by_type.png" alt="Area by change type">
+</div>
+
+<div class="panel"><h2>When did change begin? (detected pixels by onset year)</h2>
+<table><tr><th>Onset year</th><th>Pixels</th></tr>
+{% for k, v in metrics.onset_pixels_by_year_inside_aoi.items() %}<tr><td>{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table>
+</div>
+
+<div class="split">
+  <div class="panel"><h2>Before ({{ metrics.rgb_early_date }})</h2><img class="figure" src="/figures/{{ site }}/rgb_early.png"></div>
+  <div class="panel"><h2>Recent ({{ metrics.rgb_late_date }})</h2><img class="figure" src="/figures/{{ site }}/rgb_late.png"></div>
+</div>
+
+<div class="panel"><h2>Interactive time series — wetland vs control ring</h2>
+<canvas id="tsChart" height="110"></canvas>
+<p class="note">Click any point on the <a href="/map/{{ site }}">change map</a> to inspect that pixel's own NDVI/MNDWI history.</p>
+</div>
+
+<div class="split">
+  <div class="panel"><h2>NDVI distribution</h2><img class="figure" src="/figures/{{ site }}/ndvi_distribution.png"></div>
+  <div class="panel"><h2>Water index (MNDWI) distribution</h2><img class="figure" src="/figures/{{ site }}/mndwi_distribution.png"></div>
+</div>
+<div class="panel"><h2>Deviation from the learned normal pattern</h2><img class="figure" src="/figures/{{ site }}/residual_timeseries.png"></div>
+
+<p><a href="/map/{{ site }}">Open the change map →</a> · <a href="/report/{{ site }}.pdf">Download PDF report</a> · <a href="/data?site={{ site }}">Scene catalogue</a></p>
+{% else %}
+<div class="panel"><p>Analysis not run for this wetland yet: <code>python -m src.download --site {{ site }}</code> then <code>python -m src.analysis --site {{ site }}</code>.</p></div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if timeseries %}
+<script>
+const ts = {{ timeseries|tojson }};
+new Chart(document.getElementById('tsChart'), {type:'line',
+ data:{labels: ts.dates, datasets:[
+  {label:'NDVI inside', data: ts.ndvi_inside, borderColor:'#1d4e89', pointRadius:2, spanGaps:true},
+  {label:'NDVI control ring', data: ts.ndvi_outside, borderColor:'#94a3b8', pointRadius:2, spanGaps:true},
+  {label:'MNDWI inside', data: ts.mndwi_inside, borderColor:'#2563eb', borderDash:[5,4], pointRadius:2, spanGaps:true},
+  {label:'MNDWI control ring', data: ts.mndwi_outside, borderColor:'#cbd5e1', borderDash:[5,4], pointRadius:2, spanGaps:true}]},
+ options:{responsive:true, scales:{y:{title:{display:true,text:'Index value'}}}}});
+</script>
+{% endif %}
+{% endblock %}

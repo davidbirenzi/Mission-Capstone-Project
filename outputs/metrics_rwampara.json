@@ -1,0 +1,137 @@
+{
+  "site": "rwampara",
+  "label": "Rwampara Wetland",
+  "subtitle": "Rwampara valley, Nyarugenge / Kicukiro",
+  "story": "degradation_and_rehabilitation",
+  "aoi_source": "Study delineation: 180 m buffer of the OSM Rwampara stream (way 1117393177) via Overpass -- not an official boundary",
+  "intervention_label": "Urban/agricultural pressure for decades; REMA rehabilitation started later in 2024",
+  "expected_change": "Persistent vegetation/water loss from encroachment, with disturbance during rehabilitation",
+  "scenes": 37,
+  "first_date": "2017-06-27",
+  "last_date": "2026-06-30",
+  "train_scenes": 11,
+  "monitor_scenes": 26,
+  "train_end": "2020-01-01",
+  "monitor_start": "2020-01-01",
+  "usable_pixels": 231485,
+  "aoi_pixels": 13470,
+  "aoi_hectares": 134.7,
+  "training": {
+    "n_samples": 84977,
+    "n_pixels": 8000
+  },
+  "chosen_model": "Harmonic + persistence",
+  "models": {
+    "Harmonic + persistence": {
+      "precision": 0.4536802030456853,
+      "recall": 0.8773006134969326,
+      "f1": 0.5980761187787537,
+      "accuracy": 0.9740122772384326,
+      "iou": 0.4266109785202864,
+      "support": 36979,
+      "positives": 815,
+      "confusion_matrix": [
+        [
+          35303,
+          861
+        ],
+        [
+          100,
+          715
+        ]
+      ],
+      "threshold": 0.1,
+      "min_consecutive": 4
+    },
+    "MLP + persistence": {
+      "precision": 0.39629120879120877,
+      "recall": 0.7079754601226994,
+      "f1": 0.50814619110524,
+      "accuracy": 0.9697936666756808,
+      "iou": 0.34061393152302244,
+      "support": 36979,
+      "positives": 815,
+      "confusion_matrix": [
+        [
+          35285,
+          879
+        ],
+        [
+          238,
+          577
+        ]
+      ],
+      "threshold": 0.12,
+      "min_consecutive": 4
+    },
+    "Two-date baseline": {
+      "precision": 0.1444954128440367,
+      "recall": 0.5411042944785276,
+      "f1": 0.22808378588052755,
+      "accuracy": 0.9192785094242678,
+      "iou": 0.1287215411558669,
+      "support": 36979,
+      "positives": 815,
+      "confusion_matrix": [
+        [
+          33553,
+          2611
+        ],
+        [
+          374,
+          441
+        ]
+      ],
+      "threshold": 0.12,
+      "pre_date": "2018-08-16",
+      "post_date": "2025-07-30"
+    }
+  },
+  "reference_rule": {
+    "shift": 0.08,
+    "fraction": 0.6,
+    "description": "Monitoring median NDVI shifts >=0.08 from normal median on >=60% of clear monitoring observations (either direction); negatives are stable pixels. Silver-standard reference -- see docs/METHODS.md."
+  },
+  "area_hectares": {
+    "detected_inside_aoi": 56.55,
+    "detected_window": 620.04,
+    "detected_control_ring": 563.49
+  },
+  "change_by_type_inside_aoi": {
+    "Built-up / bare encroachment": 18.16,
+    "Mixed / other persistent change": 21.93,
+    "Vegetation & water gain (recovery)": 0.03,
+    "Vegetation & water loss": 0.44,
+    "Vegetation gain": 4.2,
+    "Vegetation loss": 10.35,
+    "Water gain": 0.07,
+    "Water loss (drying)": 1.37
+  },
+  "change_by_type_window": {
+    "Built-up / bare encroachment": 144.29,
+    "Mixed / other persistent change": 180.1,
+    "Vegetation & water gain (recovery)": 11.39,
+    "Vegetation & water loss": 3.22,
+    "Vegetation gain": 91.69,
+    "Vegetation loss": 168.15,
+    "Water gain": 5.93,
+    "Water loss (drying)": 15.27
+  },
+  "onset_pixels_by_year_inside_aoi": {
+    "2020": 980,
+    "2021": 1168,
+    "2022": 753,
+    "2023": 687,
+    "2024": 751,
+    "2025": 1316
+  },
+  "bounds_wgs84": [
+    30.035,
+    -1.995,
+    30.082,
+    -1.955
+  ],
+  "rgb_early_date": "2017-07-02",
+  "rgb_late_date": "2025-07-30",
+  "n_change_polygons": 62
+}

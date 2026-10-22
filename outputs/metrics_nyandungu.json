@@ -1,0 +1,138 @@
+{
+  "site": "nyandungu",
+  "label": "Nyandungu Wetland",
+  "subtitle": "Nyandungu Urban Wetland Eco-Tourism Park, Gasabo",
+  "story": "restoration",
+  "aoi_source": "OpenStreetMap (Nyandungu Urban Wetland Eco-Tourism Park) via Nominatim",
+  "intervention_label": "Restoration works began (Sep 2018); park opened 8 Jul 2022",
+  "expected_change": "Persistent vegetation gain (greening) after restoration",
+  "scenes": 38,
+  "first_date": "2017-02-07",
+  "last_date": "2026-06-30",
+  "train_scenes": 7,
+  "monitor_scenes": 31,
+  "train_end": "2018-09-01",
+  "monitor_start": "2018-09-01",
+  "usable_pixels": 226100,
+  "aoi_pixels": 12754,
+  "aoi_hectares": 127.54,
+  "training": {
+    "n_samples": 54932,
+    "n_pixels": 8000
+  },
+  "chosen_model": "MLP + persistence",
+  "models": {
+    "Harmonic + persistence": {
+      "precision": 0.548774126238915,
+      "recall": 0.8389154704944178,
+      "f1": 0.6635130873541469,
+      "accuracy": 0.954997891185154,
+      "iou": 0.49646059462010383,
+      "support": 23710,
+      "positives": 1254,
+      "confusion_matrix": [
+        [
+          21591,
+          865
+        ],
+        [
+          202,
+          1052
+        ]
+      ],
+      "threshold": 0.1,
+      "min_consecutive": 4
+    },
+    "MLP + persistence": {
+      "precision": 0.5583783783783783,
+      "recall": 0.8237639553429027,
+      "f1": 0.6655927835051546,
+      "accuracy": 0.9562210037958667,
+      "iou": 0.4987928536938677,
+      "support": 23710,
+      "positives": 1254,
+      "confusion_matrix": [
+        [
+          21639,
+          817
+        ],
+        [
+          221,
+          1033
+        ]
+      ],
+      "threshold": 0.12,
+      "min_consecutive": 4
+    },
+    "Two-date baseline": {
+      "precision": 0.45873573309920984,
+      "recall": 0.8333333333333334,
+      "f1": 0.5917327293318233,
+      "accuracy": 0.9391817798397301,
+      "iou": 0.4201849618013671,
+      "support": 23710,
+      "positives": 1254,
+      "confusion_matrix": [
+        [
+          21223,
+          1233
+        ],
+        [
+          209,
+          1045
+        ]
+      ],
+      "threshold": 0.18,
+      "pre_date": "2018-08-16",
+      "post_date": "2025-07-30"
+    }
+  },
+  "reference_rule": {
+    "shift": 0.08,
+    "fraction": 0.6,
+    "description": "Monitoring median NDVI shifts >=0.08 from normal median on >=60% of clear monitoring observations (either direction); negatives are stable pixels. Silver-standard reference -- see docs/METHODS.md."
+  },
+  "area_hectares": {
+    "detected_inside_aoi": 51.47,
+    "detected_window": 928.57,
+    "detected_control_ring": 877.1
+  },
+  "change_by_type_inside_aoi": {
+    "Built-up / bare encroachment": 0.97,
+    "Mixed / other persistent change": 9.36,
+    "Vegetation & water gain (recovery)": 7.4,
+    "Vegetation gain": 28.78,
+    "Vegetation loss": 2.55,
+    "Water gain": 1.8,
+    "Water loss (drying)": 0.61
+  },
+  "change_by_type_window": {
+    "Built-up / bare encroachment": 140.12,
+    "Mixed / other persistent change": 321.53,
+    "Vegetation & water gain (recovery)": 28.07,
+    "Vegetation & water loss": 1.96,
+    "Vegetation gain": 191.81,
+    "Vegetation loss": 223.31,
+    "Water gain": 11.3,
+    "Water loss (drying)": 10.47
+  },
+  "onset_pixels_by_year_inside_aoi": {
+    "2018": 181,
+    "2019": 663,
+    "2020": 574,
+    "2021": 139,
+    "2022": 68,
+    "2023": 625,
+    "2024": 2538,
+    "2025": 359
+  },
+  "bounds_wgs84": [
+    30.123,
+    -1.976,
+    30.174,
+    -1.94
+  ],
+  "rgb_early_date": "2017-07-02",
+  "rgb_late_date": "2025-07-30",
+  "n_change_polygons": 38
+}

@@ -3,25 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Nyandungu monitor{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2">
+  <title>{% block title %}Kigali Wetland Persistent-Change Monitor{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=3">
   {% block head %}{% endblock %}
 </head>
 <body>
   <div class="shell">
     <aside class="sidebar">
-      <p class="brand-kicker">Kigali wetland monitor</p>
-      <p class="brand">Nyandungu</p>
-      <p class="brand-note">Persistent change, phase 1</p>
+      <p class="brand-kicker">City of Kigali · Rwanda</p>
+      <p class="brand">Wetland Monitor</p>
+      <p class="brand-note">Persistent change from Sentinel-2 · ML normal-behaviour models</p>
       <nav class="nav">
-        {% for key, label, endpoint in nav %}
-          <a href="{{ url_for(endpoint) }}" class="{% if active == key %}active{% endif %}">{{ label }}</a>
+        {% for key, label, href in nav %}
+          <a href="{{ href }}" class="{% if active == key %}active{% endif %}">{{ label }}</a>
         {% endfor %}
       </nav>
+      <p class="brand-note" style="margin-top:22px">Sites:
+        {% for s, c in wetlands.items() %}<br>• <a href="/wetland/{{ s }}">{{ c.label }}</a>{% endfor %}
+      </p>
     </aside>
     <main class="main">
       {% block content %}{% endblock %}
+      <footer class="foot">Kigali Wetland Persistent-Change Monitor — David Birenzi · BSc Software Engineering capstone. Sentinel-2 data: Copernicus / Element84 Earth Search. Boundaries: OpenStreetMap contributors.</footer>
     </main>
   </div>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

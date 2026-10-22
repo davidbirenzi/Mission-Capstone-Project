@@ -222,3 +222,11 @@ code {
   .split { grid-template-columns: 1fr; }
   h1 { font-size: 24px; }
 }
+
+.foot{margin-top:36px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+.filters{display:flex;gap:16px;flex-wrap:wrap;align-items:end;margin:14px 0}
+.filters select{padding:6px}
+.active-link{font-weight:700}
+pre{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:4px;overflow-x:auto}
+pre code{background:transparent;color:inherit}
+small{color:var(--muted)}

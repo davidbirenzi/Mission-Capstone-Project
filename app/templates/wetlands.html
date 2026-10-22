@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Study wetlands</h1>
+<p class="lede">The system is wetland-agnostic: adding a site means adding a boundary and a normal-period definition. Three contrasting Kigali wetlands validate it — restoration, degradation/rehabilitation, and a second degraded valley — each with the land outside its boundary acting as a control ring.</p>
+{% for site, cfg in wetlands.items() %}
+{% set m = metrics.get(site) %}
+<div class="panel">
+  <h2>{{ cfg.label }}</h2>
+  <p>{{ cfg.subtitle }} · <em>{{ cfg.intervention_label }}</em></p>
+  <p><strong>Expected signal:</strong> {{ cfg.expected_change }}</p>
+  <p><strong>Boundary source:</strong> {{ cfg.aoi_source }}</p>
+  {% if m %}
+  <div class="grid">
+    <div class="card"><span>Wetland area</span><strong>{{ m.aoi_hectares }} ha</strong></div>
+    <div class="card"><span>Persistent change inside</span><strong>{{ m.area_hectares.detected_inside_aoi }} ha</strong></div>
+    <div class="card"><span>Control-ring detections</span><strong>{{ m.area_hectares.detected_control_ring }} ha</strong></div>
+    <div class="card"><span>Scenes</span><strong>{{ m.scenes }}</strong></div>
+  </div>
+  {% endif %}
+  <p><a href="/wetland/{{ site }}">Explore this wetland →</a> · <a href="/map/{{ site }}">Change map</a> · <a href="/report/{{ site }}.pdf">PDF report</a></p>
+</div>
+{% endfor %}
+{% endblock %}

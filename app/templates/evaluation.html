@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Evaluation</h1>
+<p class="lede">Scores are computed on <strong>spatially held-out blocks</strong> (150 m blocks assigned wholly to tuning or test) so neighbouring pixels cannot inflate results. The reference is a persistent multi-observation NDVI-shift rule ("silver standard" — rationale and limits in <code>docs/METHODS.md</code>); field verification remains the gold-standard next step.</p>
+{% for site, m in metrics.items() %}
+<div class="panel"><h2>{{ m.label }} — chosen model: {{ m.chosen_model }}</h2>
+<table class="metrics-table"><tr><th>Method</th><th>Precision</th><th>Recall</th><th>F1</th><th>Accuracy</th><th>IoU</th><th>Threshold</th><th>k</th></tr>
+{% for name, s in m.models.items() %}
+<tr><td>{% if name==m.chosen_model %}<strong>{{ name }} ★</strong>{% else %}{{ name }}{% endif %}</td>
+<td>{{ '%.3f'|format(s.precision) }}</td><td>{{ '%.3f'|format(s.recall) }}</td><td><strong>{{ '%.3f'|format(s.f1) }}</strong></td><td>{{ '%.3f'|format(s.accuracy) }}</td><td>{{ '%.3f'|format(s.iou) }}</td><td>{{ s.threshold }}</td><td>{{ s.min_consecutive if s.min_consecutive else '—' }}</td></tr>
+{% endfor %}</table>
+<p>Confusion matrices (held-out): {% for name, s in m.models.items() %}<br><strong>{{ name }}:</strong> TN {{ s.confusion_matrix[0][0] }}, FP {{ s.confusion_matrix[0][1] }}, FN {{ s.confusion_matrix[1][0] }}, TP {{ s.confusion_matrix[1][1] }} (support {{ s.support }}, reference positives {{ s.positives }}){% endfor %}</p>
+<p>Control-ring diagnostic: {{ m.area_hectares.detected_control_ring }} ha flagged outside the wetland vs {{ m.area_hectares.detected_inside_aoi }} ha inside. In fast-urbanising Kigali the ring itself genuinely changes (new built-up areas, roads), so ring detections are not automatically false alarms — the labelled stable-pixel scores above are the formal accuracy measure; the ring is shown for context on the maps.</p>
+<img class="figure" src="/figures/{{ site }}/metrics.png">
+<img class="figure" src="/figures/{{ site }}/change_map.png">
+</div>
+{% else %}<div class="panel"><p>Run <code>python -m src.analysis --all</code> first.</p></div>{% endfor %}
+<div class="panel"><h2>How to read these numbers</h2>
+<p><strong>Precision</strong> = of the pixels we flagged, how many the reference agrees with. <strong>Recall</strong> = of the reference change pixels, how many we caught. <strong>IoU</strong> = spatial overlap. Precision is usually the hardest here: genuine lasting change outside a mapped reference (e.g. greening just outside a park boundary) counts against precision even when it is real — read the control-ring row and the maps alongside the scores, and see the limitations section of the methods note.</p></div>
+{% endblock %}

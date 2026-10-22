@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Change alerts register</h1>
+<p class="lede">Every persistent-change polygon, ranked by area. This is the working list an environmental officer would verify in the field or against high-resolution imagery.</p>
+<form method="get" class="filters">
+  <label>Wetland <select name="site"><option value="">All</option>{% for s,c in wetlands.items() %}<option value="{{ s }}" {% if site_f==s %}selected{% endif %}>{{ c.label }}</option>{% endfor %}</select></label>
+  <label>Type <select name="type"><option value="">All</option>{% for t in types %}<option {% if type_f==t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></label>
+  <label>Confidence <select name="confidence"><option value="">All</option>{% for c in ["High","Medium","Low"] %}<option {% if conf_f==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+  <button type="submit">Filter</button> <a href="/alerts.csv">Download CSV</a>
+</form>
+<div class="panel"><table>
+<tr><th>#</th><th>Wetland</th><th>Type</th><th>Area (ha)</th><th>Onset</th><th>Deviation</th><th>Run</th><th>Confidence</th><th>Centre</th><th></th></tr>
+{% for r in rows %}
+<tr><td>{{ r.id }}</td><td>{{ r.site_label }}</td><td>{{ r.change_type }}</td><td><strong>{{ r.area_ha }}</strong></td><td>{{ r.onset_date }}</td><td>{{ r.mean_magnitude }}</td><td>{{ r.max_run }}</td><td>{{ r.confidence_level }} ({{ r.confidence }})</td><td>{{ r.centroid_lat }}, {{ r.centroid_lon }}</td><td><a href="/map/{{ r.site }}">Map</a></td></tr>
+{% else %}<tr><td colspan="10">No alerts match.</td></tr>{% endfor %}
+</table><p>{{ rows|length }} alerts shown.</p></div>
+{% endblock %}
